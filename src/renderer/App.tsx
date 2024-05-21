@@ -17,8 +17,8 @@ export function App() {
   }, [])
 
   return (
-    <div className="padding">
-      <h1>Count {count}</h1>
+    <div>
+      <h1 className="text-2xl font-bold">Count {count}</h1>
 
       <div>Hello world!</div>
       <div>Fast refresh active</div>
