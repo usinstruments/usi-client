@@ -3,7 +3,7 @@ import * as path from 'node:path'
 
 const main: BuildOptions = {
   platform: 'node',
-  entryPoints: [path.resolve('src/main/main.ts')],
+  entryPoints: [path.resolve('main.ts')],
   bundle: true,
   format: 'esm',
   target: 'node16', // electron version target
