@@ -1,7 +1,7 @@
 mainConfig:
   type: esbuild
   path: esbuild.main.config.ts
-  src: main.ts
+  src: src/main.ts
   output:
     dir: dist/main
     filename: main.js
@@ -9,6 +9,6 @@ mainConfig:
 rendererConfig:
   type: vite
   path: vite.config.ts
-  src: src/index.tsx
+  src: src/renderer.tsx
   output:
     dir: dist/renderer
