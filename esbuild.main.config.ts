@@ -6,7 +6,7 @@ const main: BuildOptions = {
   entryPoints: [path.resolve('src/main/main.ts')],
   bundle: true,
   format: 'esm',
-  target: 'node20.11.1', // electron version target
+  target: 'node16', // electron version target
 }
 
 // const preload: BuildOptions = {
