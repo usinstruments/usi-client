@@ -41,7 +41,7 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={formSubmit}>
+    <form onSubmit={formSubmit} className="h-full">
       <div className="flex flex-col mx-auto mt-32 w-3/5 max-w-xl gap-2">
         <div className="flex flex-row text-2xl font-bold items-center gap-4">
           U.S.I. Login
