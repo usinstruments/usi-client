@@ -46,15 +46,19 @@
         /* @apply shadow-[3px_3px_0px_1px_rgba(0,0,0,0.5)] dark:shadow-[3px_3px_0px_1px_rgba(255,255,255,0.4)]; */
     }
 
-    .right-buttons {
+    .taskbar {
         @apply w-14 flex flex-col border-x border-gray-200 dark:border-gray-800 text-3xl;
     }
 
-    .right-buttons button {
+    .taskbar button {
         @apply border-0 bg-transparent text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white w-full h-14 flex flex-row items-center justify-center;
     }
 
-    .right-buttons button svg {
+    .taskbar button.selected {
+        @apply text-black dark:text-white;
+    }
+
+    .taskbar button svg {
         /* @apply min-w-8 min-h-8; */
     }
 

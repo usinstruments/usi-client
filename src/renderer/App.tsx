@@ -1,85 +1,139 @@
 import React from "react";
 import { useUser } from "./Login.tsx";
-import { MdLogout } from "react-icons/md";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { IoCodeWorkingOutline, IoCodeWorkingSharp, IoFolderSharp, IoGitBranch, IoGitBranchSharp, IoLogOutSharp, IoReorderThreeSharp, IoShapesSharp } from "react-icons/io5";
-import { GrProjects } from "react-icons/gr";
-import { FaProjectDiagram } from "react-icons/fa";
+import {
+  IoCodeWorkingSharp,
+  IoFolderSharp,
+  IoGitBranchSharp,
+  IoLogOutSharp,
+} from "react-icons/io5";
+import { useAtom } from "jotai";
+import { myStoredAtom } from "./util.ts";
+import { TabsView } from "./TabsView.tsx";
 
-enum Order {
-    Normal,
-    Flipped
-}
+let flipped = true;
 
-let order = Order.Flipped;
+const sidebarWidthAtom = myStoredAtom("sidebarWidth", 400);
+const currentTaskAtom = myStoredAtom<string | undefined>(
+  "currentTask",
+  undefined
+);
 
 export default function App() {
   const { user, logout } = useUser();
+
+  const [sidebarWidth, setSidebarWidth] = useAtom(sidebarWidthAtom);
+  const defaultSidebarWidth = React.useRef(sidebarWidth);
+
+  const [currentTask, setCurrentTask] = useAtom(currentTaskAtom);
 
   if (user === undefined) {
     return <div>Loading...</div>;
   }
 
-  const tabs = ["Tab 1", "Tab 2", "Tab 3"];
+  function TaskbarButton(name: string, icon: JSX.Element) {
+    const current = currentTask === name;
+
+    const taskClick = () => {
+      if (current) {
+        defaultSidebarWidth.current = sidebarWidth;
+        setCurrentTask(undefined);
+      } else {
+        setCurrentTask(name);
+      }
+    };
+
+    return (
+      <button
+        title={name}
+        onClick={taskClick}
+        className={current ? "selected" : ""}
+      >
+        {icon}
+      </button>
+    );
+  }
+
+  const SidebarView = () => {
+    switch (currentTask) {
+      case "Current Project":
+        return <div>Current Project</div>;
+      case "Projects":
+        return <div>Projects</div>;
+      case "Template Repos":
+        return <div>Template Repos</div>;
+
+      default:
+        return <div></div>;
+    }
+  };
+
+  const contentPanel = (
+    <Panel order={flipped ? 1 : 2} id="content">
+      <TabsView />
+    </Panel>
+  );
+
+  const sidebarPanel = (
+    <Panel
+      order={flipped ? 2 : 1}
+      id="sidebar"
+      minSizePixels={160}
+      defaultSizePixels={defaultSidebarWidth.current}
+      onResize={(size, _) => setSidebarWidth(size.sizePixels)}
+    >
+      <SidebarView />
+    </Panel>
+  );
+
+  const resizeHandle = <PanelResizeHandle className="panel-resize-handle" />;
 
   return (
     <div className="flex flex-row h-full">
-      <div className={`flex-1 ${order === Order.Normal ? "order-2" : "order-1"}`}>
-        {order === Order.Flipped ? (
+      <div className={`flex-1 ${!flipped ? "order-2" : "order-1"}`}>
         <PanelGroup direction="horizontal">
-          <Panel order={1}>
-            {TabsView(tabs)}
-          </Panel>
-          <PanelResizeHandle className="panel-resize-handle" />
-          <Panel order={2} minSizePixels={160}>
-            {SidebarView()}
-          </Panel>
-        </PanelGroup>) : (
-        <PanelGroup direction="horizontal">
-          <Panel order={1} minSizePixels={160}>
-            {SidebarView()}
-          </Panel>
-          <PanelResizeHandle className="panel-resize-handle" />
-          <Panel order={2}>
-            {TabsView(tabs)}
-          </Panel>
-        </PanelGroup>)}
+          {flipped ? (
+            <>
+              {contentPanel}
+              {currentTask ? (
+                <>
+                  {resizeHandle}
+                  {sidebarPanel}
+                </>
+              ) : (
+                <></>
+              )}
+            </>
+          ) : (
+            <>
+              {currentTask ? (
+                <>
+                  {sidebarPanel}
+                  {resizeHandle}
+                </>
+              ) : (
+                <></>
+              )}
+              {contentPanel}
+            </>
+          )}
+        </PanelGroup>
       </div>
-      <div className={`right-buttons ${order === Order.Normal ? "order-1" : "order-2"}`}>
-        <button title="Projects">
-            <IoFolderSharp />
-        </button>
-        <button title="Projects">
-            <IoCodeWorkingSharp />
-        </button>
-        <button title="Template Repos">
-            <IoGitBranchSharp />
-        </button>
-        <button className="mt-auto overflow-hidden" title="Logout" onClick={logout}>
-            <IoLogOutSharp className="ms-1" />
+      <div className={`taskbar ${!flipped ? "order-1" : "order-2"}`}>
+        {TaskbarButton("Current Project", <IoFolderSharp />)}
+        {TaskbarButton("Projects", <IoCodeWorkingSharp />)}
+        {TaskbarButton("Template Repos", <IoGitBranchSharp />)}
+
+        <button
+          className="mt-auto overflow-hidden"
+          title="Logout"
+          onClick={logout}
+        >
+          <IoLogOutSharp className="ms-1" />
         </button>
       </div>
     </div>
   );
 }
 
-function SidebarView() {
-  return <div className="min-w-40">
-    Panel B
-  </div>;
-}
-
-function TabsView(tabs: string[]) {
-    return <div className="flex flex-col h-full">
-        <div className="tabs">
-            {tabs.map((tab) => (
-                <div className="tab" key={tab}>
-                    <span>{tab}</span>
-                    {/* <button className="w-5 h-5 flex flex-row items-center justify-center border-none">x</button> */}
-                </div>
-            ))}
-        </div>
-        <div className="flex-1 bg-gray-100 dark:bg-gray-900"></div>
-    </div>;
-}
 
