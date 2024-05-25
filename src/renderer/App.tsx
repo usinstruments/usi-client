@@ -23,7 +23,7 @@ export default function App() {
   const tabs = ["Tab 1", "Tab 2", "Tab 3"];
 
   return (
-    <div className="flex flex-row h-svh">
+    <div className="flex flex-row h-full">
       <div className={`flex-1 ${order === Order.Normal ? "order-2" : "order-1"}`}>
         {order === Order.Flipped ? (
         <PanelGroup direction="horizontal">
