@@ -34,15 +34,31 @@
     }
 
     button {
-        @apply border py-1 px-2 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black;
+        @apply border py-1 px-2 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black select-none;
         /* @apply shadow-[3px_3px_0px_1px_rgba(0,0,0,0.5)] dark:shadow-[3px_3px_0px_1px_rgba(255,255,255,0.4)]; */
     }
 
     .right-buttons {
-        @apply w-14 flex flex-col border-s border-gray-200 dark:border-gray-800 text-3xl;
+        @apply w-14 flex flex-col border-x border-gray-200 dark:border-gray-800 text-3xl;
     }
 
     .right-buttons button {
         @apply border-0 bg-transparent text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white w-full h-14 flex flex-row items-center justify-center;
+    }
+
+    .right-buttons button svg {
+        /* @apply min-w-8 min-h-8; */
+    }
+
+    .panel-resize-handle {
+        @apply w-[1px] bg-gray-200 dark:bg-gray-800 relative active:bg-black hover:bg-gray-400 dark:active:bg-white after:absolute after:w-[4px] after:h-full after:-left-[1px] before:absolute before:h-full before:w-[16px] before:-left-[6px] before:z-50;
+    }
+
+    .tabs {
+        @apply flex flex-row border-b border-gray-200 dark:border-gray-800 h-10;
+    }
+
+    .tabs .tab {
+        @apply flex flex-row items-center px-4 py-2 gap-2 select-none border-x border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900;
     }
 }
