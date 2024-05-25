@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { User } from "./api-types.ts";
+import { atom, useAtom } from "jotai";
 
 const BACKEND_URI = "http://localhost:8000";
 
@@ -52,7 +52,7 @@ export default function Login() {
         <div className="flex flex-row gap-2">
           <input type="checkbox" id="remember" name="remember" />
           <label htmlFor="remember" className="select-none">
-            boolean me
+            Remember me
           </label>
         </div>
 
@@ -66,13 +66,15 @@ export default function Login() {
   );
 }
 
+const userAtom = atom<string | undefined>(undefined);
+
 export function useUser() {
-  const [user, setUser] = useState<string | undefined>(undefined);
+  const [user, setUser] = useAtom(userAtom);
 
   const getUserFromToken = () => {
     const token = localStorage.getItem("access-token");
 
-    if (!token) {
+    if (!token || token === "undefined") {
       return;
     }
 
@@ -106,10 +108,15 @@ export function useUser() {
     }
 
     const token = await response.json();
-    localStorage.setItem("access-token", token.access_token);
+    localStorage.setItem("access-token", token["access-token"]);
 
     getUserFromToken();
   };
+
+  const logout = () => {
+    localStorage.removeItem("access-token");
+    setUser(undefined);
+  }
 
   useEffect(() => {
     getUserFromToken();
@@ -117,5 +124,5 @@ export function useUser() {
 
   // const logout = () => {
 
-  return { user, login };
+  return { user, login, logout };
 }

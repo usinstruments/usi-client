@@ -1,9 +1,10 @@
 import React from "react";
 import { useUser } from "./Login.tsx";
+import { MdLogout } from "react-icons/md";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export default function App() {
-  const { user } = useUser();
+  const { user, logout } = useUser();
 
   if (user === undefined) {
     return <div>Loading...</div>;
@@ -32,9 +33,10 @@ export default function App() {
           <Panel order={2}>Panel B</Panel>
         </PanelGroup>
       </div>
-      <div className="w-14 flex flex-col border-s border-gray-200 dark:border-gray-800">
-        <span className="w-12 aspect-square">A</span>
-        <span className="w-12 aspect-square">B</span>
+      <div className="right-buttons">
+        <button className="mt-auto overflow-hidden" title="Logout" onClick={logout}>
+            <MdLogout className="ms-1 min-w-8 min-h-8" />
+        </button>
       </div>
     </div>
   );
