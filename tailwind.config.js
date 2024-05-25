@@ -1,11 +1,16 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./public/index.html",
+    "./src/renderer/index.html",
     "./src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'sans': ['B612', 'sans-serif'],
+        'mono': ['B612 Mono', 'monospace']
+      },
+    },
   },
   plugins: [],
 }

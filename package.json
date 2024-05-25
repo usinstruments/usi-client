@@ -69,5 +69,8 @@
       "buildResources": "resources"
     },
     "publish": null
+  },
+  "dependencies": {
+    "react-resizable-panels": "^2.0.19"
   }
 }

@@ -3,10 +3,10 @@ import * as path from 'node:path'
 
 const main: BuildOptions = {
   platform: 'node',
-  entryPoints: [path.resolve('src/main.ts')],
+  entryPoints: [path.resolve('src/electron/main.ts')],
   bundle: true,
   format: 'esm',
-  target: 'node16', // electron version target
+  target: 'node20', // electron version target
 }
 
 // const preload: BuildOptions = {

@@ -1,6 +1,6 @@
 import * as path from  'path'
 import * as url from 'url'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, protocol, session } from 'electron'
 import { isDev } from 'electron-util/main'
 import { is } from 'electron-util'
 
@@ -9,6 +9,8 @@ let win: BrowserWindow | null = null
 const dirname = path.dirname(new URL(import.meta.url).pathname)
 
 async function createWindow() {
+  const ses = session.fromPartition("persist:main")
+
   win = new BrowserWindow({
     width: 800,
     height: 820,
@@ -17,6 +19,7 @@ async function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      session: ses,
     },
     show: false,
   })
