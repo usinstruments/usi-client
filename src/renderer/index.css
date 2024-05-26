@@ -92,12 +92,8 @@
         @apply bg-gray-300 dark:bg-gray-600;
     }
 
-    .tree .drag-below {
-        @apply border-b-2 border-blue-800 -mb-0.5;
-    }
-
-    .tree .drag-above {
-        @apply border-t-2 border-blue-800 -mt-0.5;
+    .tree .drag-target {
+        @apply bg-blue-200 dark:bg-blue-800;
     }
 
     .tree .node .button-or-icon {

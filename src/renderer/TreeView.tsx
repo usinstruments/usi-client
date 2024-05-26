@@ -50,7 +50,10 @@ function popNode(tree: TreeNodeData, id: string): TreeNodeData | undefined {
   return undefined;
 }
 
-function getNodeParent(tree: TreeNodeData, id: string): TreeNodeData | undefined {
+function getNodeParent(
+  tree: TreeNodeData,
+  id: string
+): TreeNodeData | undefined {
   if (!tree.children) {
     return undefined;
   }
@@ -70,9 +73,15 @@ function getNodeParent(tree: TreeNodeData, id: string): TreeNodeData | undefined
   return undefined;
 }
 
+enum DragTargetLocation {
+  Above,
+  On,
+  Below,
+}
+
 type DragTarget = {
   id: string;
-  below: boolean;
+  loc: DragTargetLocation;
 };
 
 type TreeContextType = {
@@ -96,38 +105,41 @@ export function Tree() {
   );
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
 
-  const defaultTree: TreeNodeData = { id: "root", children: [
-    {
-      id: "A",
-      children: [
-        {
-          id: "A1",
-          children: [
-            {
-              id: "A1a",
-            },
-            {
-              id: "A1b",
-            },
-          ],
-        },
-        {
-          id: "A2",
-        },
-      ],
-    },
-    {
-      id: "B",
-      children: [
-        {
-          id: "B1",
-        },
-        {
-          id: "B2",
-        },
-      ],
-    },
-  ]};
+  const defaultTree: TreeNodeData = {
+    id: "root",
+    children: [
+      {
+        id: "A",
+        children: [
+          {
+            id: "A1",
+            children: [
+              {
+                id: "A1a",
+              },
+              {
+                id: "A1b",
+              },
+            ],
+          },
+          {
+            id: "A2",
+          },
+        ],
+      },
+      {
+        id: "B",
+        children: [
+          {
+            id: "B1",
+          },
+          {
+            id: "B2",
+          },
+        ],
+      },
+    ],
+  };
 
   const [tree, setTree] = React.useState<TreeNodeData>(defaultTree);
 
@@ -140,7 +152,14 @@ export function Tree() {
 
   return (
     <TreeContext.Provider
-      value={{ selected, setSelected, dragTarget, setDragTarget, collapsed, setCollapsed }}
+      value={{
+        selected,
+        setSelected,
+        dragTarget,
+        setDragTarget,
+        collapsed,
+        setCollapsed,
+      }}
     >
       <div
         className="tree h-full"
@@ -185,35 +204,51 @@ export function Tree() {
             }
 
             if (!targetParent) {
-              throw new Error(`Could not find parent of target node ${dragTarget.id}`);
+              throw new Error(
+                `Could not find parent of target node ${dragTarget.id}`
+              );
             }
 
             if (!targetParent.children) {
-              throw new Error('This should not be possible');
+              throw new Error("This should not be possible");
             }
 
             if (!inserteeParent) {
-              throw new Error(`Could not find parent of insertee node ${insertee_id}`);
+              throw new Error(
+                `Could not find parent of insertee node ${insertee_id}`
+              );
             }
 
             if (!inserteeParent.children) {
-              throw new Error('This should not be possible');
+              throw new Error("This should not be possible");
             }
 
-            const below = dragTarget.below;
+            if (dragTarget.loc === DragTargetLocation.On) {
+              if (target.children === undefined) {
+                throw new Error("This should not be possible");
+              }
 
-            let insertee_index = targetParent.children.indexOf(target);
+              popNode(prev, insertee_id);
+              target.children.push(insertee);
+            } else {
+              const below = dragTarget.loc === DragTargetLocation.Below;
 
-            if (below) {
-              insertee_index++;
+              let insertee_index = targetParent.children.indexOf(target);
+
+              if (below) {
+                insertee_index++;
+              }
+
+              popNode(prev, insertee_id);
+              if (
+                inserteeParent === targetParent &&
+                insertee_index > targetParent.children.indexOf(insertee)
+              ) {
+                insertee_index--;
+              }
+
+              targetParent.children.splice(insertee_index, 0, insertee);
             }
-
-            popNode(prev, insertee_id);
-            if (inserteeParent === targetParent && insertee_index > targetParent.children.indexOf(insertee)) {
-              insertee_index--;
-            }
-
-            targetParent.children.splice(insertee_index, 0, insertee);
 
             return { ...prev };
           });
@@ -244,7 +279,6 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
   const amCollapsed = collapsed.has(node.id);
   const amSelected = selected === node.id;
   const amDragTarget = dragTarget?.id === node.id;
-  const isTargetBelow = dragTarget?.below;
 
   const mySetCollapsed = (f: (prev: boolean) => boolean) => {
     setCollapsed((prev) => {
@@ -258,7 +292,7 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
 
       return newSet;
     });
-  }
+  };
 
   if (!depth) {
     depth = 0;
@@ -275,7 +309,11 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
         ></div>
       )}
       <div
-        className={`node ${amSelected && "selected"} relative`}
+        className={`node ${amSelected && "selected"} relative ${
+          amDragTarget &&
+          dragTarget.loc === DragTargetLocation.On &&
+          "drag-target"
+        }`}
         ref={nodeRef}
         draggable={true}
         onClick={(e) => {
@@ -290,17 +328,35 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
           const myHeight = nodeRef.current!.getBoundingClientRect().height;
 
           const relY = (e.clientY - myY) / myHeight;
+          let loc: DragTargetLocation;
 
-          setDragTarget({ id: node.id, below: relY >= 0.5 });
+          if (node.children === undefined) {
+            // only above or below
+            if (relY >= 0.5) {
+              loc = DragTargetLocation.Below;
+            } else {
+              loc = DragTargetLocation.Above;
+            }
+          } else {
+            if (relY < 0.25) {
+              loc = DragTargetLocation.Above;
+            } else if (relY > 0.75) {
+              loc = DragTargetLocation.Below;
+            } else {
+              loc = DragTargetLocation.On;
+            }
+          }
+
+          setDragTarget({ id: node.id, loc });
         }}
       >
-        {amDragTarget && !isTargetBelow && (
+        {amDragTarget && dragTarget.loc === DragTargetLocation.Above && (
           <div
             className="absolute -top-0.5 w-full border-t-2 border-blue-500"
             style={{ left: `${depthLine[depth]}px` }}
           ></div>
         )}
-        {amDragTarget && isTargetBelow && (
+        {amDragTarget && dragTarget.loc === DragTargetLocation.Below && (
           <div
             className="absolute bottom-0 w-full border-t-2 border-blue-500"
             style={{ left: `${depthLine[depth]}px` }}
