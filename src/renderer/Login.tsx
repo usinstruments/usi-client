@@ -58,10 +58,16 @@ const userAtom = atom<string | undefined>(undefined);
 export function useUser() {
   const [user, setUser] = useAtom(userAtom);
 
-  const getUserFromToken = () => {
+  const getUserFromToken = async () => {
     const token = localStorage.getItem("access-token");
 
     if (!token || token === "undefined") {
+      return;
+    }
+
+    const userData = await myFetch('/me');
+    if (!userData.ok) {
+      localStorage.removeItem("access-token");
       return;
     }
 

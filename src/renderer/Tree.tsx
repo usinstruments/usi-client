@@ -7,7 +7,7 @@ import {
 
 type TreeNodeData = {
   id: string;
-  children?: TreeNodeData[];
+  children: TreeNodeData[] | null;
 };
 
 function findNode(tree: TreeNodeData, id: string): TreeNodeData | undefined {
@@ -73,6 +73,17 @@ function getNodeParent(
   return undefined;
 }
 
+function nodeIsGrandparent(tree: TreeNodeData, a: string, b: string): boolean {
+  // returns true if a is a grandparent of b
+  const a_node = findNode(tree, a);
+  if (!a_node) {
+    throw new Error(`Could not find node ${a}`);
+  }
+
+  const b_in_a = findNode(a_node, b);
+  return b_in_a !== undefined;
+}
+
 enum DragTargetLocation {
   Above,
   On,
@@ -99,11 +110,11 @@ type TreeContextType = {
 const TreeContext = React.createContext<TreeContextType>(undefined);
 
 export function Tree() {
-  const [selected, setSelected] = React.useState<string | undefined>(undefined);
-  const [dragTarget, setDragTarget] = React.useState<DragTarget | undefined>(
+  const [selected, setSelected] = useState<string | undefined>(undefined);
+  const [dragTarget, setDragTarget] = useState<DragTarget | undefined>(
     undefined
   );
-  const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const defaultTree: TreeNodeData = {
     id: "root",
@@ -116,14 +127,17 @@ export function Tree() {
             children: [
               {
                 id: "A1a",
+                children: null
               },
               {
                 id: "A1b",
+                children: null
               },
             ],
           },
           {
             id: "A2",
+            children: null,
           },
         ],
       },
@@ -132,9 +146,20 @@ export function Tree() {
         children: [
           {
             id: "B1",
+            children: null,
           },
           {
             id: "B2",
+            children: [
+              {
+                id: "B2a",
+                children: null,
+              },
+              {
+                id: "B2b",
+                children: null,
+              },
+            ],
           },
         ],
       },
@@ -175,29 +200,29 @@ export function Tree() {
           }
 
           setTree((prev) => {
-            const insertee_id = e.dataTransfer.getData("text/plain");
-            if (insertee_id === "") {
+            const inserteeId = e.dataTransfer.getData("text/plain");
+            if (inserteeId === "") {
               throw new Error("No insertee id in drop event");
             }
 
-            if (insertee_id === dragTarget.id) {
+            if (inserteeId === dragTarget.id) {
               // No-op
               return prev;
             }
 
-            if (insertee_id === "root") {
+            if (inserteeId === "root") {
               throw new Error("Not sure how this could happen");
             }
 
-            const insertee = findNode(prev, insertee_id);
+            const insertee = findNode(prev, inserteeId);
             if (!insertee) {
-              throw new Error(`Could not find insertee node ${insertee_id}`);
+              throw new Error(`Could not find insertee node ${inserteeId}`);
             }
 
             const targetId = dragTarget.id;
             const target = findNode(prev, targetId);
             const targetParent = getNodeParent(prev, targetId);
-            const inserteeParent = getNodeParent(prev, insertee_id);
+            const inserteeParent = getNodeParent(prev, inserteeId);
 
             if (!target) {
               throw new Error(`Could not find target node ${dragTarget.id}`);
@@ -215,7 +240,7 @@ export function Tree() {
 
             if (!inserteeParent) {
               throw new Error(
-                `Could not find parent of insertee node ${insertee_id}`
+                `Could not find parent of insertee node ${inserteeId}`
               );
             }
 
@@ -223,12 +248,17 @@ export function Tree() {
               throw new Error("This should not be possible");
             }
 
+            if (nodeIsGrandparent(prev, inserteeId, targetId)) {
+              // No-op, can't drop a parent into a child
+              return prev;
+            }
+
             if (dragTarget.loc === DragTargetLocation.On) {
-              if (target.children === undefined) {
+              if (target.children === null) {
                 throw new Error("This should not be possible");
               }
 
-              popNode(prev, insertee_id);
+              popNode(prev, inserteeId);
               target.children.push(insertee);
             } else {
               const below = dragTarget.loc === DragTargetLocation.Below;
@@ -239,7 +269,7 @@ export function Tree() {
                 insertee_index++;
               }
 
-              popNode(prev, insertee_id);
+              popNode(prev, inserteeId);
               if (
                 inserteeParent === targetParent &&
                 insertee_index > targetParent.children.indexOf(insertee)
@@ -266,6 +296,18 @@ export function Tree() {
       </div>
     </TreeContext.Provider>
   );
+}
+
+function depthLine(d: number): number {
+  if (d === 0) {
+    return 0;
+  }
+
+  if (d === 1) {
+    return 20;
+  }
+
+  return depthLine(d - 1) + 12;
 }
 
 function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
@@ -298,14 +340,13 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
     depth = 0;
   }
 
-  const depthLine = [0, 19, 32, 4, 5];
-
+  // const depthLine = [0, 20, 32, 44, 5];
   return (
     <div className={`node-container relative`}>
       {depth > 0 && (
         <div
           className="absolute top-0 h-full border-s z-10 border-gray-300 dark:border-gray-700"
-          style={{ left: `${depthLine[depth]}px` }}
+          style={{ left: `${depthLine(depth)}px` }}
         ></div>
       )}
       <div
@@ -330,7 +371,7 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
           const relY = (e.clientY - myY) / myHeight;
           let loc: DragTargetLocation;
 
-          if (node.children === undefined) {
+          if (node.children === null) {
             // only above or below
             if (relY >= 0.5) {
               loc = DragTargetLocation.Below;
@@ -353,13 +394,13 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
         {amDragTarget && dragTarget.loc === DragTargetLocation.Above && (
           <div
             className="absolute -top-0.5 w-full border-t-2 border-blue-500"
-            style={{ left: `${depthLine[depth]}px` }}
+            style={{ left: `${depthLine(depth)}px` }}
           ></div>
         )}
         {amDragTarget && dragTarget.loc === DragTargetLocation.Below && (
           <div
             className="absolute bottom-0 w-full border-t-2 border-blue-500"
-            style={{ left: `${depthLine[depth]}px` }}
+            style={{ left: `${depthLine(depth)}px` }}
           ></div>
         )}
         {Array.from({ length: depth }).map((_, i) => (

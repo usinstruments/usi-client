@@ -1,4 +1,6 @@
 import { atomWithStorage } from "jotai/utils";
+import { connectedAtom } from "./Router.tsx";
+import { store } from "./App.tsx";
 
 export function myStoredAtom<T>(key: string, initialValue: T) {
   return atomWithStorage<T>(key, initialValue, undefined, { getOnInit: true });
@@ -20,5 +22,15 @@ export function myFetch(url: string, options?: RequestInit) {
     };
   }
 
-  return fetch(`${BACKEND_URI}${url}`, options);
+  return fetch(`${BACKEND_URI}${url}`, options).catch((e: Error) => {
+    if (e.message === "Failed to fetch") {
+      store.set(connectedAtom, false);
+      throw new Error("Failed to connect to the server");
+    } else {
+      throw e;
+    }
+  }).then((res) => {
+    store.set(connectedAtom, true);
+    return res;
+  });
 }
