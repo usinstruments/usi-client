@@ -175,27 +175,45 @@ export function Tree() {
               throw new Error(`Could not find insertee node ${insertee_id}`);
             }
 
-            const target_id = dragTarget.id;
-            const target = findNode(prev, target_id);
-            const parent = getNodeParent(prev, target_id);
+            const targetId = dragTarget.id;
+            const target = findNode(prev, targetId);
+            const targetParent = getNodeParent(prev, targetId);
+            const inserteeParent = getNodeParent(prev, insertee_id);
 
             if (!target) {
               throw new Error(`Could not find target node ${dragTarget.id}`);
             }
 
-            if (!parent) {
+            if (!targetParent) {
               throw new Error(`Could not find parent of target node ${dragTarget.id}`);
             }
 
-            // if target can't have children, it's considered collapsed
-            const below = dragTarget.below;
-
-            if (!parent.children) {
+            if (!targetParent.children) {
               throw new Error('This should not be possible');
             }
-  
+
+            if (!inserteeParent) {
+              throw new Error(`Could not find parent of insertee node ${insertee_id}`);
+            }
+
+            if (!inserteeParent.children) {
+              throw new Error('This should not be possible');
+            }
+
+            const below = dragTarget.below;
+
+            let insertee_index = targetParent.children.indexOf(target);
+
+            if (below) {
+              insertee_index++;
+            }
+
             popNode(prev, insertee_id);
-            parent.children.push(insertee);
+            if (inserteeParent === targetParent && insertee_index > targetParent.children.indexOf(insertee)) {
+              insertee_index--;
+            }
+
+            targetParent.children.splice(insertee_index, 0, insertee);
 
             return { ...prev };
           });

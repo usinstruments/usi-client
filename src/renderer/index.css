@@ -16,7 +16,7 @@
     }
 
     * {
-        @apply border-black dark:border-white rounded-none outline-none;
+        @apply border-black dark:border-white rounded-sm outline-none;
     }
 
     input {
@@ -62,11 +62,11 @@
     }
 
     .tabs {
-        @apply flex flex-row border-b border-gray-200 dark:border-gray-800 h-10;
+        @apply flex flex-row border-b border-gray-200 dark:border-gray-800 h-8;
     }
 
     .tabs .tab {
-        @apply flex flex-row items-center px-4 py-2 gap-2 select-none border-x border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900;
+        @apply flex flex-row items-center px-2 py-2 gap-2 select-none border-x border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900;
     }
 
     .sidebar {

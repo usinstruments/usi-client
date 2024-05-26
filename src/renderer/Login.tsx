@@ -44,7 +44,7 @@ export default function Login() {
         </div>
 
         <button type="submit" className="special mt-2">
-          Login
+          login
         </button>
 
         {error && <div className="text-red-500">{error}</div>}
