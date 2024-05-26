@@ -1,20 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { atom, useAtom } from "jotai";
-
-const BACKEND_URI = "http://localhost:8000";
-
-function myFetch(url: string, options: RequestInit) {
-  const token = localStorage.getItem("access-token");
-
-  if (token) {
-    options.headers = {
-      ...options.headers,
-      Authorization: `Bearer ${token}`,
-    };
-  }
-
-  return fetch(url, options);
-}
+import { myFetch } from "./util.ts";
+import { BACKEND_URI } from "./util.ts";
 
 export default function Login() {
   const [error, setError] = useState<string | undefined>(undefined);
@@ -56,7 +43,7 @@ export default function Login() {
           </label>
         </div>
 
-        <button type="submit" className="mt-2">
+        <button type="submit" className="special mt-2">
           Login
         </button>
 
@@ -87,7 +74,7 @@ export function useUser() {
   }
 
   const login = async (data: any) => {
-    const response = await myFetch(`${BACKEND_URI}/login`, {
+    const response = await myFetch(`/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

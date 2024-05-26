@@ -141,3 +141,7 @@ export interface UserCreate {
   password: string;
   [k: string]: unknown;
 }
+
+export interface Error {
+  detail: string;
+}

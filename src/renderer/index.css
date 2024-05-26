@@ -8,7 +8,7 @@
     }
 
     body {
-        @apply bg-white dark:bg-black text-black dark:text-white h-full;
+        @apply bg-white dark:bg-black text-black dark:text-white h-full min-h-[380] min-w-[540px];
     }
 
     #root {
@@ -41,9 +41,8 @@
         @apply bg-black dark:bg-white bg-clip-content p-1;
     }
 
-    button {
+    .special {
         @apply border py-1 px-2 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black select-none;
-        /* @apply shadow-[3px_3px_0px_1px_rgba(0,0,0,0.5)] dark:shadow-[3px_3px_0px_1px_rgba(255,255,255,0.4)]; */
     }
 
     .taskbar {
@@ -51,15 +50,11 @@
     }
 
     .taskbar button {
-        @apply border-0 bg-transparent text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white w-full h-14 flex flex-row items-center justify-center;
+        @apply border-0 bg-transparent text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white w-full min-h-14 flex flex-row items-center justify-center;
     }
 
     .taskbar button.selected {
         @apply text-black dark:text-white;
-    }
-
-    .taskbar button svg {
-        /* @apply min-w-8 min-h-8; */
     }
 
     .panel-resize-handle {
@@ -72,5 +67,44 @@
 
     .tabs .tab {
         @apply flex flex-row items-center px-4 py-2 gap-2 select-none border-x border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900;
+    }
+
+    .sidebar {
+        @apply flex flex-col;
+    }
+
+    .sidebar h1 {
+        @apply uppercase font-bold py-2 px-4 select-none text-sm;
+    }
+
+    .tree {
+        @apply select-none flex flex-col;
+    }
+
+    .tree .node-container {}
+
+    .tree .node {
+        @apply h-6 px-2 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-800;
+        @apply flex flex-row gap-1 items-center;
+    }
+
+    .tree .node.selected {
+        @apply bg-gray-300 dark:bg-gray-600;
+    }
+
+    .tree .drag-below {
+        @apply border-b-2 border-blue-800 -mb-0.5;
+    }
+
+    .tree .drag-above {
+        @apply border-t-2 border-blue-800 -mt-0.5;
+    }
+
+    .tree .node .button-or-icon {
+        @apply border-0 flex items-center justify-center h-full aspect-square relative after:absolute after:left-0 after:top-0 after:w-5 after:h-full;
+    }
+
+    .tree .node button.button-or-icon {
+        @apply hover:bg-gray-400 dark:hover:bg-gray-600;
     }
 }

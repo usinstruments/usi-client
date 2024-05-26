@@ -9,7 +9,6 @@ export function TabsView() {
         {tabs.map((tab) => (
           <div className="tab" key={tab}>
             <span>{tab}</span>
-            {/* <button className="w-5 h-5 flex flex-row items-center justify-center border-none">x</button> */}
           </div>
         ))}
       </div>

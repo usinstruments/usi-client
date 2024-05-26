@@ -8,8 +8,11 @@ import {
   IoLogOutSharp,
 } from "react-icons/io5";
 import { useAtom } from "jotai";
-import { myStoredAtom } from "./util.ts";
+import { myFetch, myStoredAtom } from "./util.ts";
 import { TabsView } from "./TabsView.tsx";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Project } from "./api-types.ts";
+import { Tree } from "./TreeView.tsx";
 
 let flipped = true;
 
@@ -56,10 +59,10 @@ export default function App() {
 
   const SidebarView = () => {
     switch (currentTask) {
-      case "Current Project":
-        return <div>Current Project</div>;
+      case "Explorer":
+        return <ExplorerSidebar />;
       case "Projects":
-        return <div>Projects</div>;
+        return <SidebarProjects />;
       case "Template Repos":
         return <div>Template Repos</div>;
 
@@ -81,6 +84,7 @@ export default function App() {
       minSizePixels={160}
       defaultSizePixels={defaultSidebarWidth.current}
       onResize={(size, _) => setSidebarWidth(size.sizePixels)}
+      className="sidebar"
     >
       <SidebarView />
     </Panel>
@@ -95,32 +99,24 @@ export default function App() {
           {flipped ? (
             <>
               {contentPanel}
-              {currentTask ? (
-                <>
-                  {resizeHandle}
-                  {sidebarPanel}
-                </>
-              ) : (
-                <></>
-              )}
+              {
+                // prettier-ignore
+                currentTask && (<>{resizeHandle} {sidebarPanel}</>)
+              }
             </>
           ) : (
             <>
-              {currentTask ? (
-                <>
-                  {sidebarPanel}
-                  {resizeHandle}
-                </>
-              ) : (
-                <></>
-              )}
+              {
+                // prettier-ignore
+                currentTask && (<>{sidebarPanel} {resizeHandle}</>)
+              }
               {contentPanel}
             </>
           )}
         </PanelGroup>
       </div>
       <div className={`taskbar ${!flipped ? "order-1" : "order-2"}`}>
-        {TaskbarButton("Current Project", <IoFolderSharp />)}
+        {TaskbarButton("Explorer", <IoFolderSharp />)}
         {TaskbarButton("Projects", <IoCodeWorkingSharp />)}
         {TaskbarButton("Template Repos", <IoGitBranchSharp />)}
 
@@ -136,4 +132,32 @@ export default function App() {
   );
 }
 
+function ExplorerSidebar() {
+  return (
+    <>
+      <h1>Explorer</h1>
+      <Tree />
+    </>
+  );
+}
 
+function SidebarProjects() {
+  const queryClient = useQueryClient();
+  const query = useQuery<Project[]>({
+    queryKey: ["projects"],
+    queryFn: () => myFetch("/projects").then((res) => res.json()),
+  });
+
+  return (
+    <>
+      <h1>Projects</h1>
+      <div className="flex-1 px-2">
+        {query.isLoading && <div>Loading...</div>}
+        {query.isError && <div>Error: {query.error.message}</div>}
+        {query.data?.map((project) => (
+          <div key={project.id}>{project.name}</div>
+        ))}
+      </div>
+    </>
+  );
+}
