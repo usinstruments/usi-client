@@ -32,7 +32,7 @@ export function Router() {
     <QueryClientProvider client={queryClient}>
       <div className="flex flex-col h-full overflow-hidden">
         {user ? <Editor /> : <Login />}
-        <div className="flex flex-row gap-2 border-t border-gray-200 dark:border-gray-800 select-none px-2 -mb-0.5 font-bold">
+        <div className="flex flex-row items-center gap-2 border-t border-gray-200 dark:border-gray-800 select-none px-2 font-bold">
           {connected ? (
             <>
               <span className="text-green-500">CONNECTED</span>

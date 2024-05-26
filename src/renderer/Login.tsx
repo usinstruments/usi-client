@@ -98,12 +98,12 @@ export function useUser() {
       } else {
         throw new Error("Server error");
       }
+    } else {
+      const token = await response.json();
+      localStorage.setItem("access-token", token["access-token"]);
+
+      getUserFromToken();
     }
-
-    const token = await response.json();
-    localStorage.setItem("access-token", token["access-token"]);
-
-    getUserFromToken();
   };
 
   const logout = () => {

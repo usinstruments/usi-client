@@ -12,7 +12,7 @@ import { myFetch, myStoredAtom } from "./util.ts";
 import { TabsView } from "./TabsView.tsx";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Project } from "./api-types.ts";
-import { Tree } from "./Tree.tsx";
+import { Tree, TreeNodeData, findNode, getNodeParent, popNode } from "./Tree.tsx";
 
 let flipped = true;
 
@@ -135,10 +135,86 @@ export default function Editor() {
 }
 
 function ExplorerSidebar() {
+  const dummyTree: TreeNodeData = {
+    id: "root",
+    children: [
+      {
+        id: "A",
+        children: [
+          {
+            id: "A1",
+            children: [
+              {
+                id: "A1a",
+                children: null
+              },
+              {
+                id: "A1b",
+                children: null
+              },
+            ],
+          },
+          {
+            id: "A2",
+            children: null,
+          },
+        ],
+      },
+      {
+        id: "B",
+        children: [
+          {
+            id: "B1",
+            children: null,
+          },
+          {
+            id: "B2",
+            children: [
+              {
+                id: "B2a",
+                children: null,
+              },
+              {
+                id: "B2b",
+                children: null,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  const [tree, setTree] = React.useState<TreeNodeData>(dummyTree);
+  const moveNode = (inserteeId: string, targetId: string, index: number) => {
+    setTree((prev) => {
+      const insertee = findNode(prev, inserteeId);
+      const target = findNode(prev, targetId);
+
+      const inserteeParent = getNodeParent(prev, inserteeId);
+
+      if (!insertee || !target || !inserteeParent || !inserteeParent.children) {
+        throw new Error("Invalid moveNode arguments");
+      }
+
+      if (target === inserteeParent) {
+        const inserteeIndex = inserteeParent.children.indexOf(insertee);
+        if (inserteeIndex < index) {
+          index--;
+        }
+      }
+
+      popNode(prev, inserteeId);
+      target.children?.splice(index, 0, insertee);
+
+      return { ...prev };
+    });
+  }
+
   return (
     <>
       <h1>Explorer</h1>
-      <Tree />
+      <Tree tree={tree} moveNode={moveNode} />
     </>
   );
 }

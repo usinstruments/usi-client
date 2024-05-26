@@ -5,12 +5,15 @@ import {
   IoCubeSharp,
 } from "react-icons/io5";
 
-type TreeNodeData = {
+export type TreeNodeData = {
   id: string;
   children: TreeNodeData[] | null;
 };
 
-function findNode(tree: TreeNodeData, id: string): TreeNodeData | undefined {
+export function findNode(
+  tree: TreeNodeData,
+  id: string
+): TreeNodeData | undefined {
   if (tree.id === id) {
     return tree;
   }
@@ -28,7 +31,10 @@ function findNode(tree: TreeNodeData, id: string): TreeNodeData | undefined {
   return undefined;
 }
 
-function popNode(tree: TreeNodeData, id: string): TreeNodeData | undefined {
+export function popNode(
+  tree: TreeNodeData,
+  id: string
+): TreeNodeData | undefined {
   if (!tree.children) {
     return undefined;
   }
@@ -50,7 +56,7 @@ function popNode(tree: TreeNodeData, id: string): TreeNodeData | undefined {
   return undefined;
 }
 
-function getNodeParent(
+export function getNodeParent(
   tree: TreeNodeData,
   id: string
 ): TreeNodeData | undefined {
@@ -109,64 +115,20 @@ type TreeContextType = {
 // @ts-ignore
 const TreeContext = React.createContext<TreeContextType>(undefined);
 
-export function Tree() {
+export function Tree({
+  tree,
+  moveNode,
+}: {
+  tree: TreeNodeData;
+  moveNode: (inserteeId: string, targetId: string, index: number) => void;
+}) {
   const [selected, setSelected] = useState<string | undefined>(undefined);
   const [dragTarget, setDragTarget] = useState<DragTarget | undefined>(
     undefined
   );
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
-  const defaultTree: TreeNodeData = {
-    id: "root",
-    children: [
-      {
-        id: "A",
-        children: [
-          {
-            id: "A1",
-            children: [
-              {
-                id: "A1a",
-                children: null
-              },
-              {
-                id: "A1b",
-                children: null
-              },
-            ],
-          },
-          {
-            id: "A2",
-            children: null,
-          },
-        ],
-      },
-      {
-        id: "B",
-        children: [
-          {
-            id: "B1",
-            children: null,
-          },
-          {
-            id: "B2",
-            children: [
-              {
-                id: "B2a",
-                children: null,
-              },
-              {
-                id: "B2b",
-                children: null,
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-
-  const [tree, setTree] = React.useState<TreeNodeData>(defaultTree);
+  // const [tree, setTree] = React.useState<TreeNodeData>({id: "root", children: []});
 
   if (tree.id !== "root") {
     throw new Error("Tree root must have id 'root'");
@@ -199,7 +161,7 @@ export function Tree() {
             return;
           }
 
-          setTree((prev) => {
+          const next = ((prev) => {
             const inserteeId = e.dataTransfer.getData("text/plain");
             if (inserteeId === "") {
               throw new Error("No insertee id in drop event");
@@ -215,37 +177,20 @@ export function Tree() {
             }
 
             const insertee = findNode(prev, inserteeId);
-            if (!insertee) {
-              throw new Error(`Could not find insertee node ${inserteeId}`);
-            }
-
             const targetId = dragTarget.id;
             const target = findNode(prev, targetId);
             const targetParent = getNodeParent(prev, targetId);
             const inserteeParent = getNodeParent(prev, inserteeId);
 
-            if (!target) {
-              throw new Error(`Could not find target node ${dragTarget.id}`);
-            }
-
-            if (!targetParent) {
-              throw new Error(
-                `Could not find parent of target node ${dragTarget.id}`
-              );
-            }
-
-            if (!targetParent.children) {
-              throw new Error("This should not be possible");
-            }
-
-            if (!inserteeParent) {
-              throw new Error(
-                `Could not find parent of insertee node ${inserteeId}`
-              );
-            }
-
-            if (!inserteeParent.children) {
-              throw new Error("This should not be possible");
+            if (
+              !insertee ||
+              !target ||
+              !inserteeParent ||
+              !targetParent ||
+              !targetParent.children ||
+              !inserteeParent.children
+            ) {
+              throw new Error("Invalid drop event");
             }
 
             if (nodeIsGrandparent(prev, inserteeId, targetId)) {
@@ -258,30 +203,26 @@ export function Tree() {
                 throw new Error("This should not be possible");
               }
 
-              popNode(prev, inserteeId);
-              target.children.push(insertee);
+              moveNode(inserteeId, targetId, 0);
             } else {
-              const below = dragTarget.loc === DragTargetLocation.Below;
+              let inserteeIndex = targetParent.children.indexOf(target);
 
-              let insertee_index = targetParent.children.indexOf(target);
-
-              if (below) {
-                insertee_index++;
+              if (dragTarget.loc === DragTargetLocation.Below) {
+                inserteeIndex++;
               }
 
-              popNode(prev, inserteeId);
-              if (
-                inserteeParent === targetParent &&
-                insertee_index > targetParent.children.indexOf(insertee)
-              ) {
-                insertee_index--;
+              if (targetParent === inserteeParent) {
+                const oldInserteeIndex = inserteeParent.children.indexOf(insertee);
+                if (oldInserteeIndex < inserteeIndex) {
+                  inserteeIndex--;
+                }
               }
 
-              targetParent.children.splice(insertee_index, 0, insertee);
+              moveNode(inserteeId, targetParent.id, inserteeIndex);
             }
 
             return { ...prev };
-          });
+          })(tree);
 
           setDragTarget(undefined);
         }}
