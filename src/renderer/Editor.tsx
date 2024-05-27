@@ -14,11 +14,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Project } from "./types/api-types.ts";
 import {
   Tree,
+} from "./Tree.tsx";
+import {
   TreeNodeData,
   findNode,
   getNodeParent,
-  popNode,
-} from "./Tree.tsx";
+  popNode
+} from "./types/tree.ts";
 
 let flipped = true;
 
