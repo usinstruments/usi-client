@@ -11,7 +11,7 @@ import { useAtom } from "jotai";
 import { myFetch, myStoredAtom } from "./util.ts";
 import { TabsView } from "./TabsView.tsx";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Project } from "./api-types.ts";
+import { Project } from "./types/api-types.ts";
 import {
   Tree,
   TreeNodeData,
