@@ -12,7 +12,13 @@ import { myFetch, myStoredAtom } from "./util.ts";
 import { TabsView } from "./TabsView.tsx";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Project } from "./api-types.ts";
-import { Tree, TreeNodeData, findNode, getNodeParent, popNode } from "./Tree.tsx";
+import {
+  Tree,
+  TreeNodeData,
+  findNode,
+  getNodeParent,
+  popNode,
+} from "./Tree.tsx";
 
 let flipped = true;
 
@@ -62,7 +68,7 @@ export default function Editor() {
       case "Explorer":
         return <ExplorerSidebar />;
       case "Projects":
-        return <SidebarProjects />;
+        return <ProjectsSidebar />;
       case "Template Repos":
         return <div>Template Repos</div>;
 
@@ -137,45 +143,56 @@ export default function Editor() {
 function ExplorerSidebar() {
   const dummyTree: TreeNodeData = {
     id: "root",
+    draggable: false,
     children: [
       {
         id: "A",
+        draggable: false,
         children: [
           {
             id: "A1",
+            draggable: false,
             children: [
               {
                 id: "A1a",
-                children: null
+                draggable: false,
+                children: null,
               },
               {
                 id: "A1b",
-                children: null
+                draggable: false,
+                children: null,
               },
             ],
           },
           {
             id: "A2",
             children: null,
+            draggable: false,
           },
         ],
       },
       {
         id: "B",
+        draggable: false,
         children: [
           {
             id: "B1",
+            draggable: false,
             children: null,
           },
           {
             id: "B2",
+            draggable: false,
             children: [
               {
                 id: "B2a",
+                draggable: false,
                 children: null,
               },
               {
                 id: "B2b",
+                draggable: true,
                 children: null,
               },
             ],
@@ -191,25 +208,12 @@ function ExplorerSidebar() {
       const insertee = findNode(prev, inserteeId);
       const target = findNode(prev, targetId);
 
-      const inserteeParent = getNodeParent(prev, inserteeId);
-
-      if (!insertee || !target || !inserteeParent || !inserteeParent.children) {
-        throw new Error("Invalid moveNode arguments");
-      }
-
-      if (target === inserteeParent) {
-        const inserteeIndex = inserteeParent.children.indexOf(insertee);
-        if (inserteeIndex < index) {
-          index--;
-        }
-      }
-
       popNode(prev, inserteeId);
       target.children?.splice(index, 0, insertee);
 
       return { ...prev };
     });
-  }
+  };
 
   return (
     <>
@@ -219,22 +223,38 @@ function ExplorerSidebar() {
   );
 }
 
-function SidebarProjects() {
+function ProjectsSidebar() {
   const queryClient = useQueryClient();
-  const query = useQuery<Project[]>({
+  const {isLoading, isError, error, data} = useQuery<Project[]>({
     queryKey: ["projects"],
     queryFn: () => myFetch("/projects").then((res) => res.json()),
   });
+
+  const projectTree = useMemo(() => {
+    if (!data) {
+      return undefined;
+    }
+
+    const tree: TreeNodeData = {
+      id: "root",
+      draggable: false,
+      children: data.map((project) => ({
+        id: project.id,
+        draggable: false,
+        children: null,
+      })),
+    };
+
+    return tree;
+  }, [data]);
 
   return (
     <>
       <h1>Projects</h1>
       <div className="flex-1 px-2">
-        {query.isLoading && <div>Loading...</div>}
-        {query.isError && <div>Error: {query.error.message}</div>}
-        {query.data?.map((project) => (
-          <div key={project.id}>{project.name}</div>
-        ))}
+        {isLoading && <div>Loading...</div>}
+        {isError && <div>Error: {error.message}</div>}
+        {projectTree && <Tree tree={projectTree} moveNode={() => {}} />}
       </div>
     </>
   );

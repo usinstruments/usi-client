@@ -5,12 +5,17 @@ import {
   IoCubeSharp,
 } from "react-icons/io5";
 
-export type TreeNodeData = {
+export interface TreeNodeData {
   id: string;
   children: TreeNodeData[] | null;
+  draggable: boolean;
 };
 
-export function findNode(
+export interface TreeNodeDataWithChildren extends TreeNodeData {
+  children: TreeNodeData[];
+};
+
+function findNodeMaybe(
   tree: TreeNodeData,
   id: string
 ): TreeNodeData | undefined {
@@ -20,7 +25,7 @@ export function findNode(
 
   if (tree.children) {
     for (const child of tree.children) {
-      const found = findNode(child, id);
+      const found = findNodeMaybe(child, id);
 
       if (found) {
         return found;
@@ -31,7 +36,17 @@ export function findNode(
   return undefined;
 }
 
-export function popNode(
+export function findNode(tree: TreeNodeData, id: string): TreeNodeData {
+  const found = findNodeMaybe(tree, id);
+
+  if (!found) {
+    throw new Error(`Could not find node ${id}`);
+  }
+
+  return found;
+}
+
+function _popNode(
   tree: TreeNodeData,
   id: string
 ): TreeNodeData | undefined {
@@ -46,7 +61,7 @@ export function popNode(
   }
 
   for (const child of tree.children) {
-    const found = popNode(child, id);
+    const found = _popNode(child, id);
 
     if (found) {
       return found;
@@ -56,20 +71,30 @@ export function popNode(
   return undefined;
 }
 
-export function getNodeParent(
+export function popNode(tree: TreeNodeData, id: string): TreeNodeData {
+  const popped = _popNode(tree, id);
+
+  if (!popped) {
+    throw new Error(`Could not find node ${id}`);
+  }
+
+  return popped;
+}
+
+function _getNodeParent(
   tree: TreeNodeData,
   id: string
-): TreeNodeData | undefined {
+): TreeNodeDataWithChildren | undefined {
   if (!tree.children) {
     return undefined;
   }
 
   for (const child of tree.children) {
     if (child.id === id) {
-      return tree;
+      return tree as TreeNodeDataWithChildren;
     }
 
-    const found = getNodeParent(child, id);
+    const found = _getNodeParent(child, id);
 
     if (found) {
       return found;
@@ -77,6 +102,16 @@ export function getNodeParent(
   }
 
   return undefined;
+}
+
+export function getNodeParent(tree: TreeNodeData, id: string): TreeNodeDataWithChildren {
+  const parent = _getNodeParent(tree, id);
+
+  if (!parent) {
+    throw new Error(`Could not find parent of node ${id}`);
+  }
+
+  return parent;
 }
 
 function nodeIsGrandparent(tree: TreeNodeData, a: string, b: string): boolean {
@@ -86,7 +121,7 @@ function nodeIsGrandparent(tree: TreeNodeData, a: string, b: string): boolean {
     throw new Error(`Could not find node ${a}`);
   }
 
-  const b_in_a = findNode(a_node, b);
+  const b_in_a = findNodeMaybe(a_node, b);
   return b_in_a !== undefined;
 }
 
@@ -297,7 +332,7 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
           "drag-target"
         }`}
         ref={nodeRef}
-        draggable={true}
+        draggable={node.draggable}
         onClick={(e) => {
           e.stopPropagation();
           setSelected(node.id);

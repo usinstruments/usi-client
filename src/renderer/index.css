@@ -43,6 +43,7 @@
 
     .special {
         @apply border py-1 px-2 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black select-none;
+        @apply disabled:bg-white dark:disabled:bg-black disabled:border-gray-500 disabled:text-gray-500;
     }
 
     .taskbar {

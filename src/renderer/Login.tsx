@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { atom, useAtom } from "jotai";
 import { myFetch } from "./util.ts";
 import { BACKEND_URI } from "./util.ts";
 
 export default function Login() {
   const [error, setError] = useState<string | undefined>(undefined);
+  const [loggingIn, setLoggingIn] = useState(false);
   const { login } = useUser();
 
   const formSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(undefined);
+    setLoggingIn(true);
 
     const formData = new FormData(e.currentTarget);
     let data: any = Object.fromEntries(formData.entries());
@@ -25,6 +27,8 @@ export default function Login() {
     } catch (error: any) {
       setError(error.message);
     }
+
+    setLoggingIn(false);
   };
 
   return (
@@ -43,8 +47,8 @@ export default function Login() {
           </label>
         </div>
 
-        <button type="submit" className="special mt-2">
-          login
+        <button type="submit" disabled={loggingIn} className="special mt-2">
+          {loggingIn ? "logging in..." : "login"}
         </button>
 
         {error && <div className="text-red-500">{error}</div>}
