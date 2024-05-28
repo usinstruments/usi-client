@@ -1,19 +1,32 @@
+import { ReactNode } from "react";
 
-export interface TreeNodeData {
-  id: string;
-  children: TreeNodeData[] | null;
-  draggable: boolean;
+export interface BaseTreeNode {
+  children: this[] | null;
 }
-;
 
-export interface TreeNodeDataWithChildren extends TreeNodeData {
-  children: TreeNodeData[];
-};
+export function treeMap<I extends BaseTreeNode, O extends BaseTreeNode>(
+  tree: I,
+  fn: (node: I) => O
+): O {
+  return {
+    ...fn(tree),
+    children: tree.children
+      ? tree.children.map((child) => treeMap(child, fn))
+      : null,
+  };
+}
 
-function findNodeMaybe(
-  tree: TreeNodeData,
-  id: string
-): TreeNodeData | undefined {
+export interface TreeNode extends BaseTreeNode {
+  id: string;
+  draggable: boolean;
+  icon?: ReactNode;
+  content?: ReactNode;
+  children: this[] | null;
+}
+
+type TreeNodeDataWithChildren = TreeNode & { children: TreeNode[] };
+
+function findNodeMaybe(tree: TreeNode, id: string): TreeNode | undefined {
   if (tree.id === id) {
     return tree;
   }
@@ -31,7 +44,7 @@ function findNodeMaybe(
   return undefined;
 }
 
-export function findNode(tree: TreeNodeData, id: string): TreeNodeData {
+export function findNode(tree: TreeNode, id: string): TreeNode {
   const found = findNodeMaybe(tree, id);
 
   if (!found) {
@@ -40,10 +53,7 @@ export function findNode(tree: TreeNodeData, id: string): TreeNodeData {
 
   return found;
 }
-function popNodeMaybe(
-  tree: TreeNodeData,
-  id: string
-): TreeNodeData | undefined {
+function popNodeMaybe(tree: TreeNode, id: string): TreeNode | undefined {
   if (!tree.children) {
     return undefined;
   }
@@ -65,7 +75,7 @@ function popNodeMaybe(
   return undefined;
 }
 
-export function popNode(tree: TreeNodeData, id: string): TreeNodeData {
+export function popNode(tree: TreeNode, id: string): TreeNode {
   const popped = popNodeMaybe(tree, id);
 
   if (!popped) {
@@ -75,7 +85,7 @@ export function popNode(tree: TreeNodeData, id: string): TreeNodeData {
   return popped;
 }
 function getNodeParentMaybe(
-  tree: TreeNodeData,
+  tree: TreeNode,
   id: string
 ): TreeNodeDataWithChildren | undefined {
   if (!tree.children) {
@@ -97,7 +107,10 @@ function getNodeParentMaybe(
   return undefined;
 }
 
-export function getNodeParent(tree: TreeNodeData, id: string): TreeNodeDataWithChildren {
+export function getNodeParent(
+  tree: TreeNode,
+  id: string
+): TreeNodeDataWithChildren {
   const parent = getNodeParentMaybe(tree, id);
 
   if (!parent) {
@@ -106,7 +119,11 @@ export function getNodeParent(tree: TreeNodeData, id: string): TreeNodeDataWithC
 
   return parent;
 }
-export function nodeIsGrandparent(tree: TreeNodeData, a: string, b: string): boolean {
+export function nodeIsGrandparent(
+  tree: TreeNode,
+  a: string,
+  b: string
+): boolean {
   // returns true if a is a grandparent of b
   const a_node = findNode(tree, a);
   if (!a_node) {

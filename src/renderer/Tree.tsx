@@ -4,7 +4,12 @@ import {
   IoChevronForwardSharp,
   IoCubeSharp,
 } from "react-icons/io5";
-import { TreeNodeData, findNode, getNodeParent, nodeIsGrandparent } from "./types/tree.ts";
+import {
+  TreeNode,
+  findNode,
+  getNodeParent,
+  nodeIsGrandparent,
+} from "./types/tree.ts";
 
 enum DragTargetLocation {
   Above,
@@ -31,11 +36,11 @@ type TreeContextType = {
 // @ts-ignore
 const TreeContext = React.createContext<TreeContextType>(undefined);
 
-export function Tree({
+export function TreeView({
   tree,
   moveNode,
 }: {
-  tree: TreeNodeData;
+  tree: TreeNode;
   moveNode: (inserteeId: string, targetId: string, index: number) => void;
 }) {
   const [selected, setSelected] = useState<string | undefined>(undefined);
@@ -128,7 +133,8 @@ export function Tree({
               }
 
               if (targetParent === inserteeParent) {
-                const oldInserteeIndex = inserteeParent.children.indexOf(insertee);
+                const oldInserteeIndex =
+                  inserteeParent.children.indexOf(insertee);
                 if (oldInserteeIndex < inserteeIndex) {
                   inserteeIndex--;
                 }
@@ -146,7 +152,7 @@ export function Tree({
         <div className="node-container">
           <div className="children">
             {tree.children.map((node) => (
-              <TreeNode key={node.id} node={node} />
+              <TreeNodeView key={node.id} node={node} />
             ))}
           </div>
         </div>
@@ -167,7 +173,7 @@ function depthLine(d: number): number {
   return depthLine(d - 1) + 12;
 }
 
-function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
+function TreeNodeView({ node, depth }: { node: TreeNode; depth?: number }) {
   const nodeRef = useRef<HTMLDivElement>(null);
 
   // const [open, setOpen] = useState(true);
@@ -197,20 +203,20 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
     depth = 0;
   }
 
+  const icon = node.icon || <IoCubeSharp />;
+
   // const depthLine = [0, 20, 32, 44, 5];
   return (
     <div className={`node-container relative`}>
-      {depth > 0 && (
+      {/* {depth > 0 && (
         <div
           className="absolute top-0 h-full border-s z-10 border-gray-300 dark:border-gray-700"
           style={{ left: `${depthLine(depth)}px` }}
         ></div>
-      )}
+      )} */}
       <div
         className={`node ${amSelected && "selected"} relative ${
-          amDragTarget &&
-          dragTarget.loc === DragTargetLocation.On &&
-          "drag-target"
+          amDragTarget && dragTarget.loc === DragTargetLocation.On && "drag-target"
         }`}
         ref={nodeRef}
         draggable={node.draggable}
@@ -261,7 +267,7 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
           ></div>
         )}
         {Array.from({ length: depth }).map((_, i) => (
-          <div key={i} className="w-2"></div>
+          <div key={i} className="w-4"></div>
         ))}
         {node.children ? (
           <button
@@ -274,16 +280,15 @@ function TreeNode({ node, depth }: { node: TreeNodeData; depth?: number }) {
             {!amCollapsed ? <IoChevronDownSharp /> : <IoChevronForwardSharp />}
           </button>
         ) : (
-          <div className="button-or-icon">
-            <IoCubeSharp />
-          </div>
+          <div className="button-or-icon ms-5">{icon}</div>
         )}
-        <span>{node.id}</span>
+        {node.children && <div className="button-or-icon -ms-1">{icon}</div>}
+        <div className="w-full">{node.content}</div>
       </div>
       {!amCollapsed && node.children && (
         <div className="children">
           {node.children.map((child) => (
-            <TreeNode key={child.id} node={child} depth={depth + 1} />
+            <TreeNodeView key={child.id} node={child} depth={depth + 1} />
           ))}
         </div>
       )}

@@ -23,6 +23,7 @@ export interface Project {
   name: string;
   template_repo_branch: string;
   template_repo_id: string;
+  template_repo: Repo;
   id: string;
   owner_id: string;
   acl: Acl;

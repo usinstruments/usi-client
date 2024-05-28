@@ -15,6 +15,10 @@
         @apply h-full;
     }
 
+    .false {
+        /* intentionally empty, string interpolation on booleans results in a false class existing sometimes */
+    }
+
     * {
         @apply border-black dark:border-white rounded-sm outline-none;
     }
@@ -85,8 +89,8 @@
     .tree .node-container {}
 
     .tree .node {
-        @apply h-6 px-2 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-800;
-        @apply flex flex-row gap-1 items-center;
+        @apply h-6 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-800;
+        @apply flex flex-row items-center;
     }
 
     .tree .node.selected {

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useUser } from "./Login.tsx";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import {
@@ -8,19 +8,9 @@ import {
   IoLogOutSharp,
 } from "react-icons/io5";
 import { useAtom } from "jotai";
-import { myFetch, myStoredAtom } from "./util.ts";
+import { myStoredAtom } from "./util.ts";
 import { TabsView } from "./TabsView.tsx";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Project } from "./types/api-types.ts";
-import {
-  Tree,
-} from "./Tree.tsx";
-import {
-  TreeNodeData,
-  findNode,
-  getNodeParent,
-  popNode
-} from "./types/tree.ts";
+import { ExplorerSidebar, ProjectsSidebar, ReposSidebar } from "./Sidebars.tsx";
 
 let flipped = true;
 
@@ -65,14 +55,14 @@ export default function Editor() {
     );
   }
 
-  const SidebarView = () => {
+  const SidebarFactory = () => {
     switch (currentTask) {
       case "Explorer":
         return <ExplorerSidebar />;
       case "Projects":
         return <ProjectsSidebar />;
       case "Template Repos":
-        return <div>Template Repos</div>;
+        return <ReposSidebar />;
 
       default:
         return <div></div>;
@@ -95,7 +85,7 @@ export default function Editor() {
         onResize={(size, _) => setSidebarWidth(size.sizePixels)}
         className="sidebar"
       >
-        <SidebarView />
+        <SidebarFactory />
       </Panel>
     );
   }, [currentTask]);
@@ -139,125 +129,5 @@ export default function Editor() {
         </button>
       </div>
     </div>
-  );
-}
-
-function ExplorerSidebar() {
-  const dummyTree: TreeNodeData = {
-    id: "root",
-    draggable: false,
-    children: [
-      {
-        id: "A",
-        draggable: false,
-        children: [
-          {
-            id: "A1",
-            draggable: false,
-            children: [
-              {
-                id: "A1a",
-                draggable: false,
-                children: null,
-              },
-              {
-                id: "A1b",
-                draggable: false,
-                children: null,
-              },
-            ],
-          },
-          {
-            id: "A2",
-            children: null,
-            draggable: false,
-          },
-        ],
-      },
-      {
-        id: "B",
-        draggable: false,
-        children: [
-          {
-            id: "B1",
-            draggable: false,
-            children: null,
-          },
-          {
-            id: "B2",
-            draggable: false,
-            children: [
-              {
-                id: "B2a",
-                draggable: false,
-                children: null,
-              },
-              {
-                id: "B2b",
-                draggable: true,
-                children: null,
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-
-  const [tree, setTree] = React.useState<TreeNodeData>(dummyTree);
-  const moveNode = (inserteeId: string, targetId: string, index: number) => {
-    setTree((prev) => {
-      const insertee = findNode(prev, inserteeId);
-      const target = findNode(prev, targetId);
-
-      popNode(prev, inserteeId);
-      target.children?.splice(index, 0, insertee);
-
-      return { ...prev };
-    });
-  };
-
-  return (
-    <>
-      <h1>Explorer</h1>
-      <Tree tree={tree} moveNode={moveNode} />
-    </>
-  );
-}
-
-function ProjectsSidebar() {
-  const queryClient = useQueryClient();
-  const {isLoading, isError, error, data} = useQuery<Project[]>({
-    queryKey: ["projects"],
-    queryFn: () => myFetch("/projects").then((res) => res.json()),
-  });
-
-  const projectTree = useMemo(() => {
-    if (!data) {
-      return undefined;
-    }
-
-    const tree: TreeNodeData = {
-      id: "root",
-      draggable: false,
-      children: data.map((project) => ({
-        id: project.id,
-        draggable: false,
-        children: null,
-      })),
-    };
-
-    return tree;
-  }, [data]);
-
-  return (
-    <>
-      <h1>Projects</h1>
-      <div className="flex-1 px-2">
-        {isLoading && <div>Loading...</div>}
-        {isError && <div>Error: {error.message}</div>}
-        {projectTree && <Tree tree={projectTree} moveNode={() => {}} />}
-      </div>
-    </>
   );
 }
