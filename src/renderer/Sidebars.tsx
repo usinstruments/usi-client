@@ -149,7 +149,7 @@ export function ReposSidebar() {
         const treeEntries: TreeNode = treeMap(repo.tree, (node) => {
           return {
             ...node,
-            id: `${repo.id}-${node.name}`,
+            id: `${repo.id}-${node.path}`,
             draggable: false,
             icon:
               node.children === null ? (
@@ -166,7 +166,7 @@ export function ReposSidebar() {
                   }
 
                   openTab({
-                    id: `${repo.id}`,
+                    id: `${repo.id}-${node.path}`,
                     name: node.name,
                     icon: <IoDocumentTextSharp />,
                     content: (
