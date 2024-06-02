@@ -49,14 +49,14 @@ export function TabsView() {
                 e.stopPropagation();
                 setTabs((prev) => prev.filter((t) => t.id !== tab.id));
               }}
-              className="ms-2 hover:bg-gray-400 dark:hover:bg-gray-600"
+              className="ms-2 hover:bg-zinc-400 dark:hover:bg-zinc-600"
             >
               <IoCloseSharp />
             </button>
           </div>
         ))}
       </div>
-      <div className="flex-1 bg-gray-100 dark:bg-gray-900 h-full max-h-full">
+      <div className="flex-1 bg-zinc-100 dark:bg-zinc-900 h-full max-h-full">
         {currentTab?.content}
       </div>
     </div>

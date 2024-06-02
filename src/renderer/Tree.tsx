@@ -214,7 +214,7 @@ function TreeNodeView({ node, depth }: { node: TreeNode; depth?: number }) {
     <div className={`node-container relative`}>
       {/* {depth > 0 && (
         <div
-          className="absolute top-0 h-full border-s z-10 border-gray-300 dark:border-gray-700"
+          className="absolute top-0 h-full border-s z-10 border-zinc-300 dark:border-zinc-700"
           style={{ left: `${depthLine(depth)}px` }}
         ></div>
       )} */}

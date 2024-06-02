@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
-import { myFetch } from "./util.ts";
+import { myFetch } from "../util.ts";
 
 export function FileViewerUri({ name, uri }: { name: string; uri: string }) {
   const content = useQuery({

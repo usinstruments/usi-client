@@ -12,7 +12,7 @@ import { Project, Repo } from "./types/api-types.ts";
 import { TreeView } from "./Tree.tsx";
 import { TreeNode, treeMap } from "./types/tree.ts";
 import { openTab } from "./TabsView.tsx";
-import { FileViewerUri } from "./FileViewer.tsx";
+import { FileViewerUri } from "./components/FileViewer.tsx";
 
 export function Sidebar({
   title,
