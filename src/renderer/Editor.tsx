@@ -10,7 +10,7 @@ import {
 import { useAtom } from "jotai";
 import { myStoredAtom } from "./util.ts";
 import { TabsView } from "./TabsView.tsx";
-import { ExplorerSidebar, ProjectsSidebar, ReposSidebar } from "./Sidebars.tsx";
+import { ExplorerSidebar, ProjectsSidebar, ReposSidebar, Sidebar } from "./Sidebars.tsx";
 
 let flipped = true;
 
@@ -61,7 +61,7 @@ export default function Editor() {
         return <ExplorerSidebar />;
       case "Projects":
         return <ProjectsSidebar />;
-      case "Template Repos":
+      case "Repositories":
         return <ReposSidebar />;
 
       default:
@@ -85,7 +85,7 @@ export default function Editor() {
         onResize={(size, _) => setSidebarWidth(size.sizePixels)}
         className="sidebar"
       >
-        <SidebarFactory />
+        <Sidebar title={currentTask || ""}>{SidebarFactory()}</Sidebar>
       </Panel>
     );
   }, [currentTask]);
@@ -93,7 +93,7 @@ export default function Editor() {
   const resizeHandle = <PanelResizeHandle className="panel-resize-handle" />;
 
   return (
-    <div className="flex flex-row h-full">
+    <div className="flex flex-row min-h-0 h-full">
       <div className={`flex-1 ${!flipped ? "order-2" : "order-1"}`}>
         <PanelGroup direction="horizontal">
           {flipped ? (
@@ -118,10 +118,10 @@ export default function Editor() {
       <div className={`taskbar ${!flipped ? "order-1" : "order-2"}`}>
         {TaskbarButton("Explorer", <IoFolderSharp />)}
         {TaskbarButton("Projects", <IoCodeWorkingSharp />)}
-        {TaskbarButton("Template Repos", <IoGitBranchSharp />)}
+        {TaskbarButton("Repositories", <IoGitBranchSharp />)}
 
         <button
-          className="mt-auto overflow-hidden"
+          className="mt-auto overflow-x-hidden"
           title="Logout"
           onClick={logout}
         >

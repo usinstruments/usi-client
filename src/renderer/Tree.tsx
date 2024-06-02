@@ -38,16 +38,20 @@ const TreeContext = React.createContext<TreeContextType>(undefined);
 
 export function TreeView({
   tree,
+  initialCollapsed,
   moveNode,
 }: {
   tree: TreeNode;
+  initialCollapsed?: Set<string>;
   moveNode: (inserteeId: string, targetId: string, index: number) => void;
 }) {
   const [selected, setSelected] = useState<string | undefined>(undefined);
   const [dragTarget, setDragTarget] = useState<DragTarget | undefined>(
     undefined
   );
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    initialCollapsed || new Set()
+  );
 
   // const [tree, setTree] = React.useState<TreeNodeData>({id: "root", children: []});
 
@@ -216,7 +220,9 @@ function TreeNodeView({ node, depth }: { node: TreeNode; depth?: number }) {
       )} */}
       <div
         className={`node ${amSelected && "selected"} relative ${
-          amDragTarget && dragTarget.loc === DragTargetLocation.On && "drag-target"
+          amDragTarget &&
+          dragTarget.loc === DragTargetLocation.On &&
+          "drag-target"
         }`}
         ref={nodeRef}
         draggable={node.draggable}
@@ -267,7 +273,7 @@ function TreeNodeView({ node, depth }: { node: TreeNode; depth?: number }) {
           ></div>
         )}
         {Array.from({ length: depth }).map((_, i) => (
-          <div key={i} className="w-4"></div>
+          <div key={i} className="min-w-4"></div>
         ))}
         {node.children ? (
           <button

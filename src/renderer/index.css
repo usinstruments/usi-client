@@ -9,6 +9,7 @@
 
     body {
         @apply bg-white dark:bg-black text-black dark:text-white h-full min-h-[380] min-w-[540px];
+        scrollbar-width: thin;
     }
 
     #root {
@@ -74,8 +75,12 @@
         @apply flex flex-row items-center px-2 py-2 gap-2 select-none border-x border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900;
     }
 
+    .tabs .tab.active {
+        @apply bg-gray-200 dark:bg-gray-800;
+    }
+
     .sidebar {
-        @apply flex flex-col;
+        @apply flex flex-col h-full;
     }
 
     .sidebar h1 {
@@ -83,18 +88,18 @@
     }
 
     .tree {
-        @apply select-none flex flex-col;
+        @apply select-none flex flex-col overflow-y-auto overflow-x-hidden pb-4;
     }
 
     .tree .node-container {}
 
     .tree .node {
-        @apply h-6 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-800;
+        @apply h-6 hover:bg-gray-200 dark:hover:bg-gray-800 active:bg-gray-300 dark:active:bg-gray-700;
         @apply flex flex-row items-center;
     }
 
     .tree .node.selected {
-        @apply bg-gray-300 dark:bg-gray-700;
+        @apply bg-gray-300 dark:bg-gray-700 active:bg-gray-400 dark:active:bg-gray-600;
     }
 
     .tree .drag-target {
@@ -107,5 +112,18 @@
 
     .tree .node button.button-or-icon {
         @apply hover:bg-gray-400 dark:hover:bg-gray-600;
+    }
+
+    ::-webkit-scrollbar{
+        @apply w-2;
+    }
+
+    ::-webkit-scrollbar-track-piece{
+        @apply bg-transparent;
+    }
+
+    ::-webkit-scrollbar-thumb{
+        @apply w-2;
+        @apply bg-black dark:bg-white bg-opacity-20 dark:bg-opacity-20 hover:bg-opacity-30 active:bg-opacity-40;
     }
 }

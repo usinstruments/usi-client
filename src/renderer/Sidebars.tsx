@@ -1,13 +1,33 @@
 import React, { useMemo } from "react";
 import {
   IoCubeSharp,
-  IoDocumentTextSharp, IoFolderSharp, IoGitBranchSharp, IoSettingsSharp
+  IoDocumentTextSharp,
+  IoFolderSharp,
+  IoGitBranchSharp,
+  IoSettingsSharp,
 } from "react-icons/io5";
 import { myFetch } from "./util.ts";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Project, Repo } from "./types/api-types.ts";
 import { TreeView } from "./Tree.tsx";
 import { TreeNode, treeMap } from "./types/tree.ts";
+import { openTab } from "./TabsView.tsx";
+import { FileViewerUri } from "./FileViewer.tsx";
+
+export function Sidebar({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <h1>{title}</h1>
+      <div className="min-h-0 flex-1">{children}</div>
+    </>
+  );
+}
 
 export function ExplorerSidebar() {
   // reference implementation of moving nodes
@@ -22,7 +42,6 @@ export function ExplorerSidebar() {
   // };
   return (
     <>
-      <h1>Explorer</h1>
     </>
   );
 }
@@ -74,31 +93,48 @@ export function ProjectsSidebar() {
     return tree;
   }, [project.data]);
 
+  if (project.isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (project.isError) {
+    return <div>Error: {project.error.message}</div>;
+  }
+
+  if (!projectTree) {
+    return <div>No projects</div>;
+  }
+
   return (
-    <>
-      <h1>Projects</h1>
-      <div className="flex-1">
-        {project.isLoading && <div>Loading...</div>}
-        {project.isError && <div>Error: {project.error.message}</div>}
-        {projectTree && <TreeView tree={projectTree} moveNode={() => { }} />}
-      </div>
-    </>
+    <TreeView
+      tree={projectTree}
+      initialCollapsed={
+        new Set(projectTree.children?.map((node) => node.id) || [])
+      }
+      moveNode={() => {}}
+    />
   );
 }
+
 export function ReposSidebar() {
   const repos = useQuery({
     queryKey: ["repos"],
-    queryFn: () => myFetch("/repos").then((res) => res.json()).then((repos: Repo[]) => {
-      const promises = repos.map(async (repo) => {
-        const tree = await myFetch(`/repos/${repo.id}/HEAD`).then((res) => res.json());
-        return {
-          ...repo,
-          tree,
-        };
-      });
+    queryFn: () =>
+      myFetch("/repos")
+        .then((res) => res.json())
+        .then((repos: Repo[]) => {
+          const promises = repos.map(async (repo) => {
+            const tree = await myFetch(`/repos/${repo.id}/HEAD`).then((res) =>
+              res.json()
+            );
+            return {
+              ...repo,
+              tree,
+            };
+          });
 
-      return Promise.all(promises);
-    }),
+          return Promise.all(promises);
+        }),
   });
 
   const repoTree = useMemo(() => {
@@ -110,13 +146,41 @@ export function ReposSidebar() {
       id: "root",
       draggable: false,
       children: repos.data.map((repo) => {
-        const treeEntries = treeMap(repo.tree, (node) => {
+        const treeEntries: TreeNode = treeMap(repo.tree, (node) => {
           return {
             ...node,
             id: `${repo.id}-${node.name}`,
             draggable: false,
-            icon: node.children === null ? <IoDocumentTextSharp /> : <IoFolderSharp />,
-            content: <span>{node.name}</span>,
+            icon:
+              node.children === null ? (
+                <IoDocumentTextSharp />
+              ) : (
+                <IoFolderSharp />
+              ),
+            content: (
+              <div
+                className="w-full"
+                onDoubleClick={() => {
+                  if (node.children !== null) {
+                    return;
+                  }
+
+                  openTab({
+                    id: `${repo.id}`,
+                    name: node.name,
+                    icon: <IoDocumentTextSharp />,
+                    content: (
+                      <FileViewerUri
+                        name={node.name}
+                        uri={`/repos/${repo.id}/HEAD${node.path}`}
+                      />
+                    ),
+                  });
+                }}
+              >
+                {node.name}
+              </div>
+            ),
           };
         });
 
@@ -133,14 +197,25 @@ export function ReposSidebar() {
     return tree;
   }, [repos.data]);
 
+  if (repos.isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (repos.isError) {
+    return <div>Error: {repos.error.message}</div>;
+  }
+
+  if (!repoTree) {
+    return <div>No repos</div>;
+  }
+
   return (
-    <>
-      <h1>Repositories</h1>
-      <div className="flex-1">
-        {repos.isLoading && <div>Loading...</div>}
-        {repos.isError && <div>Error: {repos.error.message}</div>}
-        {repoTree && <TreeView tree={repoTree} moveNode={() => { }} />}
-      </div>
-    </>
+    <TreeView
+      tree={repoTree}
+      initialCollapsed={
+        new Set(repoTree.children?.map((node) => node.id) || [])
+      }
+      moveNode={() => {}}
+    />
   );
 }
