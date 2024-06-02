@@ -12,7 +12,9 @@ import { Project, Repo } from "./types/api-types.ts";
 import { TreeView } from "./Tree.tsx";
 import { TreeNode, treeMap } from "./types/tree.ts";
 import { openTab } from "./TabsView.tsx";
-import { FileViewerUri } from "./components/FileViewer.tsx";
+import { FileViewer } from "./components/FileViewer.tsx";
+import { makeComponentDef as makeComponentDef } from "./components/ComponentFactory.tsx";
+import { makeIconDef } from "./components/IconFactory.tsx";
 
 export function Sidebar({
   title,
@@ -40,58 +42,13 @@ export function ExplorerSidebar() {
   //     return { ...prev };
   //   });
   // };
-  return (
-    <>
-    </>
-  );
+  return <></>;
 }
 export function ProjectsSidebar() {
-  const queryClient = useQueryClient();
   const project = useQuery<Project[]>({
     queryKey: ["projects"],
     queryFn: () => myFetch("/projects").then((res) => res.json()),
   });
-
-  const projectTree = useMemo(() => {
-    if (!project.data) {
-      return undefined;
-    }
-
-    const tree: TreeNode = {
-      id: "root",
-      draggable: false,
-      children: project.data.map((project) => {
-        return {
-          id: project.id,
-          draggable: false,
-          icon: <IoDocumentTextSharp />,
-          content: <div className="w-full">{project.name}</div>,
-          children: [
-            {
-              id: `${project.id}-repo`,
-              draggable: false,
-              icon: <IoGitBranchSharp />,
-              content: (
-                <span>
-                  {project.template_repo.name} @ {project.template_repo_branch}
-                </span>
-              ),
-              children: null, // TODO show files at this commit
-            },
-            {
-              id: `${project.id}-config`,
-              draggable: false,
-              icon: <IoSettingsSharp />,
-              content: <span>Config</span>,
-              children: null,
-            },
-          ],
-        };
-      }),
-    };
-
-    return tree;
-  }, [project.data]);
 
   if (project.isLoading) {
     return <div>Loading...</div>;
@@ -101,18 +58,35 @@ export function ProjectsSidebar() {
     return <div>Error: {project.error.message}</div>;
   }
 
-  if (!projectTree) {
-    return <div>No projects</div>;
-  }
+  return (
+    <div>
+      <hr className="border-zinc-200 dark:border-zinc-800" />
+      {project.data?.map((project) => (
+        <ProjectListItem project={project} key={project.id} />
+      ))}
+    </div>
+  );
+}
+
+function ProjectListItem({ project }: { project: Project }) {
+  const [hover, setHover] = React.useState(false);
 
   return (
-    <TreeView
-      tree={projectTree}
-      initialCollapsed={
-        new Set(projectTree.children?.map((node) => node.id) || [])
-      }
-      moveNode={() => {}}
-    />
+    <>
+      <div
+        className="hover:bg-zinc-100 dark:hover:bg-zinc-900 select-none flex flex-row items-center text-xl ps-4 h-10"
+        onMouseOver={() => setHover(true)}
+        onMouseOut={() => setHover(false)}
+      >
+        <div>{project.name}</div>
+        {hover && (
+          <button className="ml-auto px-4 hover:bg-zinc-300 active:bg-zinc-400 dark:hover:bg-zinc-700 dark:active:bg-zinc-600 h-full">
+            Open
+          </button>
+        )}
+      </div>
+      <hr className="border-zinc-200 dark:border-zinc-800" />
+    </>
   );
 }
 
@@ -168,13 +142,12 @@ export function ReposSidebar() {
                   openTab({
                     id: `${repo.id}-${node.path}`,
                     name: node.name,
-                    icon: <IoDocumentTextSharp />,
-                    content: (
-                      <FileViewerUri
-                        name={node.name}
-                        uri={`/repos/${repo.id}/HEAD${node.path}`}
-                      />
-                    ),
+                    // icon: <IoDocumentTextSharp />,
+                    icon: makeIconDef(IoDocumentTextSharp),
+                    content: makeComponentDef(FileViewer, {
+                      name: node.name,
+                      uri: `/repos/${repo.id}/HEAD${node.path}`,
+                    }),
                   });
                 }}
               >

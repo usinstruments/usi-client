@@ -64,7 +64,7 @@
     }
 
     .panel-resize-handle {
-        @apply w-[1px] bg-zinc-200 dark:bg-zinc-800 relative active:bg-black hover:bg-zinc-400 dark:active:bg-white after:absolute after:w-[4px] after:h-full after:-left-[1px] before:absolute before:h-full before:w-[16px] before:-left-[6px] before:z-50;
+        @apply w-[1px] bg-zinc-200 dark:bg-zinc-800 relative active:bg-black hover:bg-zinc-400 dark:active:bg-white after:absolute after:w-[4px] after:h-full after:-left-[1px] before:absolute before:h-full before:w-[8px] before:-left-[0px] before:z-50;
     }
 
     .tabs {

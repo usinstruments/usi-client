@@ -1,17 +1,20 @@
 import { atom, useAtom } from "jotai";
 import React, { ReactNode, useMemo, useState } from "react";
-import { IoCloseSharp, IoCubeSharp } from "react-icons/io5";
+import { IoCloseSharp } from "react-icons/io5";
 import { store } from "./App.tsx";
+import ComponentFactory, { ComponentDef } from "./components/ComponentFactory.tsx";
+import IconFactory, { IconDef } from "./components/IconFactory.tsx";
+import { atomWithStorage } from "jotai/utils";
 
 type Tab = {
   id: string;
   name: string;
-  icon: ReactNode;
-  content: ReactNode;
+  icon: IconDef;
+  content: ComponentDef;
 };
 
-const tabsAtom = atom<Tab[]>([]);
-const currentTabIdAtom = atom<string | undefined>(undefined);
+const tabsAtom = atomWithStorage<Tab[]>("openTabs", []);
+const currentTabIdAtom = atomWithStorage<string | undefined>("currentTab", undefined);
 
 export function openTab(tab: Tab) {
   store.set(tabsAtom, (prev) => {
@@ -33,6 +36,9 @@ export function TabsView() {
     return tabs.find((tab) => tab.id === currentTabId);
   }, [tabs, currentTabId]);
 
+  const closeTab = (id: string) => 
+                setTabs((prev) => prev.filter((t) => t.id !== id));
+
   return (
     <div className="flex flex-col h-full">
       <div className="tabs">
@@ -40,14 +46,16 @@ export function TabsView() {
           <div
             className={`tab ${tab.id === currentTabId ? "active" : ""}`}
             onClick={() => setCurrentTabId(tab.id)}
+            onAuxClick={() => closeTab(tab.id)}
             key={tab.id}
           >
-            {tab.icon}
+            {/* {tab.icon} */}
+            <IconFactory {...tab.icon} />
             <span>{tab.name}</span>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setTabs((prev) => prev.filter((t) => t.id !== tab.id));
+                closeTab(tab.id);
               }}
               className="ms-2 hover:bg-zinc-400 dark:hover:bg-zinc-600"
             >
@@ -56,8 +64,8 @@ export function TabsView() {
           </div>
         ))}
       </div>
-      <div className="flex-1 bg-zinc-100 dark:bg-zinc-900 h-full max-h-full">
-        {currentTab?.content}
+      <div className="min-h-0 h-full">
+        {currentTab && <ComponentFactory {...currentTab.content} />}
       </div>
     </div>
   );
