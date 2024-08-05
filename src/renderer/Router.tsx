@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { atom, useAtom } from "jotai";
 import { myFetch } from "./util.ts";
 import { store } from "./App.tsx";
+import { ProjectContextProvider } from "./ProjectContext.tsx";
 
 export const connectedAtom = atom(false);
 export const pingAtom = atom(NaN);
@@ -31,7 +32,13 @@ export function Router() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex flex-col h-full">
-        {user ? <Editor /> : <Login />}
+        {user ? (
+          <ProjectContextProvider>
+            <Editor />
+          </ProjectContextProvider>
+        ) : (
+          <Login />
+        )}
         <div className="flex flex-row items-center gap-2 border-t border-zinc-200 dark:border-zinc-800 select-none px-2 font-bold">
           {connected ? (
             <>

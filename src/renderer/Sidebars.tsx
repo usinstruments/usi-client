@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 import {
   IoCubeSharp,
   IoDocumentTextSharp,
@@ -15,6 +15,7 @@ import { openTab } from "./TabsView.tsx";
 import { FileViewer } from "./components/FileViewer.tsx";
 import { makeComponentDef as makeComponentDef } from "./components/ComponentFactory.tsx";
 import { makeIconDef } from "./components/IconFactory.tsx";
+import { ProjectContext } from "./ProjectContext.tsx";
 
 export function Sidebar({
   title,
@@ -70,17 +71,23 @@ export function ProjectsSidebar() {
 
 function ProjectListItem({ project }: { project: Project }) {
   const [hover, setHover] = React.useState(false);
+  const { currentProject, setCurrentProject } = useContext(ProjectContext);
+
+  const amCurrent = currentProject?.id === project.id;
 
   return (
     <>
       <div
-        className="hover:bg-zinc-100 dark:hover:bg-zinc-900 select-none flex flex-row items-center text-xl ps-4 h-10"
+        className={`hover:bg-zinc-100 dark:hover:bg-zinc-900 select-none flex flex-row items-center text-xl ps-4 h-10 ${amCurrent ? "bg-green-200 dark:bg-green-800 hover:bg-green-200 dark:hover:bg-green-800" : ""}`}
         onMouseOver={() => setHover(true)}
         onMouseOut={() => setHover(false)}
       >
-        <div>{project.name}</div>
-        {hover && (
-          <button className="ml-auto px-4 hover:bg-zinc-300 active:bg-zinc-400 dark:hover:bg-zinc-700 dark:active:bg-zinc-600 h-full">
+        <div className="ellipsis">{project.name}</div>
+        {hover && !amCurrent && (
+          <button
+            className="ml-auto px-4 hover:bg-zinc-300 active:bg-zinc-400 dark:hover:bg-zinc-700 dark:active:bg-zinc-600 h-full"
+            onClick={() => setCurrentProject(project.id)}
+          >
             Open
           </button>
         )}
@@ -142,7 +149,6 @@ export function ReposSidebar() {
                   openTab({
                     id: `${repo.id}-${node.path}`,
                     name: node.name,
-                    // icon: <IoDocumentTextSharp />,
                     icon: makeIconDef(IoDocumentTextSharp),
                     content: makeComponentDef(FileViewer, {
                       name: node.name,

@@ -126,4 +126,8 @@
         @apply w-2;
         @apply bg-black dark:bg-white bg-opacity-20 dark:bg-opacity-20 hover:bg-opacity-30 active:bg-opacity-40;
     }
+
+    .ellipsis {
+        @apply text-nowrap text-ellipsis overflow-x-hidden;
+    }
 }
