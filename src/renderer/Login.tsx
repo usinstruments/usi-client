@@ -16,11 +16,12 @@ export default function Login() {
     const formData = new FormData(e.currentTarget);
     let data: any = Object.fromEntries(formData.entries());
 
-    if (data["remember"] === "on") {
-      data["remember"] = true;
-    } else {
-      data["remember"] = false;
-    }
+    // if (data["remember"] === "on") {
+    //   data["remember"] = true;
+    // } else {
+    //   data["remember"] = false;
+    // }
+    data["remember"] = true;
 
     try {
       await login(data);
@@ -41,10 +42,10 @@ export default function Login() {
         <input type="password" name="password" placeholder="password" />
 
         <div className="flex flex-row gap-2">
-          <input type="checkbox" id="remember" name="remember" />
-          <label htmlFor="remember" className="select-none">
+          {/* <input type="checkbox" id="remember" name="remember" /> */}
+          {/* <label htmlFor="remember" className="select-none">
             Remember me
-          </label>
+          </label> */}
         </div>
 
         <button type="submit" disabled={loggingIn} className="special mt-2">

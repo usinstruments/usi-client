@@ -66,11 +66,12 @@ export function ProjectContextProvider({
   };
 
   const handleProjectChange = async (projectId: string) => {
-    const proj = await myFetch(`/projects/${projectId}`).then((res) =>
-      res.json()
-    );
-    setCurrentProject(proj);
-    subscribersRef.current = {};
+    // const proj = await myFetch(`/projects/${projectId}`).then((res) =>
+    //   res.json()
+    // );
+
+    // setCurrentProject(proj);
+    // subscribersRef.current = {};
   };
 
   useEffect(() => {

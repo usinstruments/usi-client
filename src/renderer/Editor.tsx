@@ -10,7 +10,7 @@ import {
 import { useAtom } from "jotai";
 import { myStoredAtom } from "./util.ts";
 import { TabsView } from "./TabsView.tsx";
-import { ExplorerSidebar, ProjectsSidebar, ReposSidebar, Sidebar } from "./Sidebars.tsx";
+import { ExplorerSidebar, Sidebar } from "./Sidebars.tsx";
 
 let flipped = true;
 
@@ -59,11 +59,6 @@ export default function Editor() {
     switch (currentTask) {
       case "Explorer":
         return <ExplorerSidebar />;
-      case "Projects":
-        return <ProjectsSidebar />;
-      case "Repositories":
-        return <ReposSidebar />;
-
       default:
         return <div></div>;
     }
@@ -117,8 +112,6 @@ export default function Editor() {
       </div>
       <div className={`taskbar ${!flipped ? "order-1" : "order-2"}`}>
         {TaskbarButton("Explorer", <IoFolderSharp />)}
-        {TaskbarButton("Projects", <IoCodeWorkingSharp />)}
-        {TaskbarButton("Repositories", <IoGitBranchSharp />)}
 
         <button
           className="mt-auto overflow-x-hidden"
